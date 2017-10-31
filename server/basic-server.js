@@ -15,7 +15,7 @@ var port = 3000;
 var ip = '127.0.0.1';
 
 
- 
+
 // We use node's http module to create a server.
 //
 // The function we pass to http.createServer will be used to handle all
@@ -38,4 +38,3 @@ server.listen(port, ip);
 // server.listen() will continue running as long as there is the
 // possibility of serving more requests. To stop your server, hit
 // Ctrl-C on the command line.
-

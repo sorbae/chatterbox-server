@@ -13,7 +13,7 @@ this file and include it in basic-server.js so that it actually works.
 **************************************************************/
 
 let returnData = {
-  results: []
+  results: [{username: 'Jono', message: 'Do my bidding!'}, {username: 'poo', message: 'foo'}]
 };
 
 var requestHandler = function(request, response) {
@@ -59,12 +59,17 @@ var requestHandler = function(request, response) {
 
   if (request.url !== serverUrl) {
     response.writeHead(404, headers);
+    response.end();
+  }
+
+  if (request.method === 'OPTIONS') {
+    response.writeHead(200, headers);
     response.end(JSON.stringify(returnData));
   }
 
-
   if (request.method === 'GET') {
     // request.pipe(response);
+    headers['Content-Type'] = 'application/json';
     response.writeHead(200, headers);
     response.end(JSON.stringify(returnData));
 
@@ -72,7 +77,6 @@ var requestHandler = function(request, response) {
 
   if (request.method === 'POST') {
     response.writeHead(201, headers);
-    
     let collection = [];
 
     request.on('data', (message) => {
@@ -88,12 +92,14 @@ var requestHandler = function(request, response) {
       });
       response.end(JSON.stringify(returnData));
     });
-    
+
   }
 
 
 
-  
+
+
+
   // response.writeHead(statusCode, headers);
   // response.end(JSON.stringify(response));
 };
