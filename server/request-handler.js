@@ -12,7 +12,13 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 
+let returnData = {
+  results: []
+};
+
 var requestHandler = function(request, response) {
+  serverUrl = '/classes/messages';
+
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -28,7 +34,6 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-
   // The outgoing status.
   var statusCode = 200;
 
@@ -43,7 +48,6 @@ var requestHandler = function(request, response) {
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
 
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
@@ -52,7 +56,46 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+
+  if (request.url !== serverUrl) {
+    response.writeHead(404, headers);
+    response.end(JSON.stringify(returnData));
+  }
+
+
+  if (request.method === 'GET') {
+    // request.pipe(response);
+    response.writeHead(200, headers);
+    response.end(JSON.stringify(returnData));
+
+  }
+
+  if (request.method === 'POST') {
+    response.writeHead(201, headers);
+    
+    let collection = [];
+
+    request.on('data', (message) => {
+      collection.push(message);
+    });
+
+    request.on('end', () => {
+      collection = Buffer.concat(collection).toString();
+      returnData.results.push(JSON.parse(collection));
+
+      request.on('error', (err) => {
+        console.error(err.stack);
+      });
+      response.end(JSON.stringify(returnData));
+    });
+    
+  }
+
+
+
+  
+  // response.writeHead(statusCode, headers);
+  // response.end(JSON.stringify(response));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -71,3 +114,4 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+exports.requestHandler = requestHandler;
