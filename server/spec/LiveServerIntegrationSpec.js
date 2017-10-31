@@ -74,5 +74,16 @@ describe('server', function() {
     });
   });
 
+  it('should respond to OPTIONS requests for /classes/messages with a 200 status code', function(done) {
+    var requestParams = {method: 'OPTIONS',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+    };
+
+    request(requestParams, function(error, response, body) {
+      expect(response.statusCode).to.equal(200);
+      done();
+    });
+  });
+
 
 });
