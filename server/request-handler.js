@@ -11,10 +11,25 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var fs = require('fs');
+let returnData = {results: [{username: 'default', message: 'Hello, world!'}]};
+var readStream = fs.createReadStream('message.txt', 'utf8');
 
-let returnData = {
-  results: [{username: 'Jono', message: 'Do my bidding!'}, {username: 'poo', message: 'foo'}]
-};
+if (!fs.existsSync('message.txt')) {
+  fs.writeFile('message.txt', returnData.results[0], (err) => {
+    if (err) {
+      throw err
+    };
+    console.log('Created new file');
+  });
+}
+
+readStream.on('data', function(message) {
+  message = JSON.parse(`[${message.slice(0, -1)}]`);
+  returnData.results = message;
+}).on('end', function() {
+  console.log(returnData.results);
+});
 
 var requestHandler = function(request, response) {
   serverUrl = '/classes/messages';
@@ -72,7 +87,6 @@ var requestHandler = function(request, response) {
     headers['Content-Type'] = 'application/json';
     response.writeHead(200, headers);
     response.end(JSON.stringify(returnData));
-
   }
 
   if (request.method === 'POST') {
@@ -87,9 +101,14 @@ var requestHandler = function(request, response) {
       collection = Buffer.concat(collection).toString();
       returnData.results.push(JSON.parse(collection));
 
+      fs.appendFile('message.txt', (collection + ','), 'utf8', () => {
+        console.log('Collection appended:', collection);
+      });
+
       request.on('error', (err) => {
         console.error(err.stack);
       });
+
       response.end(JSON.stringify(returnData));
     });
 
